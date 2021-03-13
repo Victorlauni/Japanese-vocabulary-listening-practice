@@ -59,6 +59,8 @@ struct MainView: View {
     @State private var answerVis = false
     @State private var answer: String = ""
     @State private var wrongAns = false
+    @State private var mark: Int = 0
+    @State private var endOfFile: Bool = false
     func playSound() {
         guard question < wordList.list.count else {return}
         let utt = AVSpeechUtterance(string: wordList.list[question])
@@ -74,24 +76,58 @@ struct MainView: View {
             answer = ""
         }
         else {
+            if (!wrongAns && !answerVis) {
+                mark += 1
+            }
+            wrongAns = false
             answerVis = false
-            question += 1
+            //question += 1
             answer = ""
+            checkEndOfFile()
         }
     }
     
+    func checkEndOfFile() {
+        if (wordList.list.count <= question + 1) {
+            endOfFile = true
+        }
+        else {
+            question += 1
+            playSound()
+        }
+    }
     
-    var body: some View {
-        VStack {
-            //Text(wordList.list[question])
-            Text("Test").opacity(answerVis ? 1 : 0)
+    func reset() {
+        question = 0
+        wrongAns = false
+        mark = 0
+        answerVis = false
+        wordList.list.shuffle()
+    }
+    
+    var questionRow: some View {
+        return VStack {
+            Text(wordList.list[question]).opacity(answerVis ? 1 : 0).padding()
             HStack {
                 Button("Listen", action: playSound)
                 Button("Show Answer") {
                     answerVis = true
                 }
             }
-            Divider()
+        }.alert(isPresented: $endOfFile, content: {
+            Alert(title: Text("Reached end of file"), message: Text(""), primaryButton: Alert.Button.default( Text("Reset")) {
+                reset()
+            }, secondaryButton: Alert.Button.default(Text("Open New File")) {
+                openFile(wordList: wordList)
+            })
+        })
+    }
+    
+    var body: some View {
+        VStack {
+            //Text(wordList.list[question])
+            questionRow
+            Divider().padding()
             HStack {
                 TextField("Answer", text: $answer,
                           onCommit: {
@@ -103,7 +139,8 @@ struct MainView: View {
                     checkAns()
                 }
             }
-            
+            Divider().padding()
+            Text("Score: " + String(mark) + "/" + String(question))
         }
         .padding()
     }
