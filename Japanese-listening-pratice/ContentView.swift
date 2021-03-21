@@ -61,6 +61,7 @@ struct MainView: View {
     @State private var wrongAns = false
     @State private var mark: Int = 0
     @State private var endOfFile: Bool = false
+    
     func playSound() {
         guard question < wordList.list.count else {return}
         let utt = AVSpeechUtterance(string: wordList.list[question])
@@ -105,8 +106,27 @@ struct MainView: View {
         wordList.list.shuffle()
     }
     
+    func checkWordType(str: String) -> String {
+        guard let unwrappedFir: Character = str.first else {
+            return "?"
+        }
+        let hiragana: Character = "あ"
+        let katakana: Character = "ア"
+        if (unwrappedFir >= hiragana && unwrappedFir < katakana){
+            return "Hiragana"
+        }
+        else if (unwrappedFir >= katakana && unwrappedFir <= "ヺ") {
+            return "Katakana"
+        }
+        else {
+            return "?"
+        }
+        
+    }
+    
     var questionRow: some View {
         return VStack {
+            Text(checkWordType(str: wordList.list[question]))
             Text(wordList.list[question]).opacity(answerVis ? 1 : 0).padding()
             HStack {
                 Button("Listen", action: playSound)
@@ -140,19 +160,25 @@ struct MainView: View {
                 }
             }
             Divider().padding()
-            Text("Score: " + String(mark) + "/" + String(question))
+            HStack {
+                Text("Score: " + String(mark) + "/" + String(question))
+                /*Button("Open New File") {
+                    reset()
+                    openFile(wordList: wordList)
+                }*/
+            }
+            
         }
         .padding()
     }
 }
 
 struct Menubar : Commands {
-    var wordList: wordlist
-
-    
+    var wordList: wordlist    
     var body: some Commands {
         CommandGroup(replacing: CommandGroupPlacement.newItem) {
             Button("Open File") {
+                
                 openFile(wordList: wordList)
             }
         }

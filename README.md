@@ -9,4 +9,6 @@ word3
 
 Each word is separated by a new line charater '/n'
 
-Remark: Katakana, hiragana and kanji will be treated as different word.
+Remark:
+* Only accept Japanese word (Katakana, Hiragana and Japanese Kanji)
+* Katakana, hiragana and kanji will be treated as different word.
